@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>MindSphere GPT</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 100%;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #007bff;
+        }
+
+        .chatbox {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            overflow-y: scroll;
+            max-height: 400px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px #007bff;
+        }
+
+        .chatbox p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user {
+            text-align: right;
+            color: #007bff;
+            margin: 5px 10px;
+        }
+
+        .bot {
+            text-align: left;
+            color: #28a745;
+            margin: 5px 10px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .timestamps {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            display: block;
+            margin-top: -10px;
+        }
+
+        #user_input_form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #reply_info {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 80px);
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button[type="submit"] {
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        button[type="submit"] svg {
+            margin-right: 5px;
+        }
+
+        .dots {
+            cursor: pointer;
+            display: inline-block;
+            padding: 0 2px;
+            color: black;
+            font-size: 20px;
+        }
+
+        .options {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1;
+            box-shadow: 0 0 10px #007bff;
+        }
+
+        .options button {
+            border: none;
+            background: none;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .options button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .delete-chat {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .chatbox::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chatbox::-webkit-scrollbar-thumb {
+            background-color: #007bff;
+            border-radius: 4px;
+        }
+
+        .chatbox::-webkit-scrollbar-track {
+            background-color: #e9ecef;
+        }
+
+        body::-webkit-scrollbar {
+            width: 8px;
+            border-radius: 8px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: #007bff;
+            border-radius: 4px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #007bff; font-weight: bolder;">MindSphere GPT</h1>
+        <p style="text-align: center; color: #007bff;">This is my AI Chatbot 4, named 'MindSphere GPT'. It represents the
+            fourth iteration
+            of my AI chatbot model.</p>
+        <div class="chatbox" id="chatbox"></div>
+        <form id="user_input_form" action="/chat" method="post">
+            <div id="reply_info" style="display: none;"></div>
+            <input type="hidden" id="reply_input" name="reply_input">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 5px;">
+                <input type="text" id="user_input" name="user_input" autocomplete="off"
+                    placeholder="Type your message..."
+                    style="flex-grow: 1; margin-right: 10px; padding: 10px; border-radius: 20px; border: 1px solid #007bff;">
+                <button type="submit"
+                    style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                    <img style="width: 24px;"
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC6ElEQVR4nO2YTWgTQRiGRxFEUBRFaAh66alI9dCLBz1YitCDJxFvXgz1KChJRSyhYKFgsvNFRUTw4kGhPYmIB62Ch5gZAi1LpdUi2l6UoOBPdWeidmR/YrbWJJP9mU1hH/ggkMs3m2ffzbsIxcTExIRJvih2Fmh1CAi7jdYLhddis0bZMaB8AhNWBcoFJuwc6nQKpWofUF7AlH00l64P+3mdLHehTiRHf+zBhA0D4QvupXMvDJF59Nn6jAl/iDqJ8bLYjkv8FBD+GBO2svpqczEy9U30X3snrhQN+wCUn4x6Z5QVYqNGjQFM2B0gbPnfpcGZ1GRFdI+8FJeefHWWZ1/yRbElssU1wvcB5eOY8veNlgZHmcGbSyKR0cXpiYrb/1uRRR+mrNxsaXAps3/slbX80RuLq78vVw9FFn0yk5qsiL0XZ63ley/P//XembdCiA0RRV/zcSuTyOjWIWreu/TJKo0+2XErk3BmtffWg2ulUDa6lUWfF2USzqzx3r76z5VFnxdlatO71ntrNMJToUefH2Uae8/N7DfwtNjh+QBA2N0gFm+kTCPvoe7/PeTbd8IXw1Cmufe89gsMIr9opephTNmvIJVp5T3Y/3s+ZJ+JTSgIMOW5IJVp5j3UD5BDQT5dMWUzQSjTyntw5mqJH0BBYiaSmQp+lJHxHmz3Z1AYAGHnvSoj4z3U0yec2mg+0IDyKS/KyHgPKmpjvvg9CZR9akcZWe9BVW0Eyo7LKiPrPdTTR01t7BtbONIzOn8/OawbQXgPUdXGXem5bYm0PpRI62Xv3vPoaqOb/x1CxntQXRsb0ZXRz3jxHlTVxlbszs5uTV6w7wlZ70Ovje3SMzr3oD3vQ6iNfjiovRloy/ugamOQAOEnag87mdH81MawsN5YUP5UIvv91cYwMVMFKDuLCWNN/PdXG1Vgvxxg06HVRhWYpch8wwGE/Q6lNqpCKxn9QPhS4LVRJeZNa76yCbw2xsTEoHXLH1K6lxNbQo4wAAAAAElFTkSuQmCC">
+                </button>
+            </div>
+        </form>
+        <button class="delete-chat" onclick="clearChat()">Delete All Chat</button>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (localStorage.getItem("chatHistory")) {
+                document.getElementById("chatbox").innerHTML = localStorage.getItem("chatHistory");
+            } else {
+                var botTime = new Date().toLocaleString();
+                document.getElementById("chatbox").innerHTML = "<p class='bot'>Welcome! How can I assist you today?</p><p class='timestamp'>" + botTime + "</p>";
+            }
+
+            document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+
+            initializeOptions();
+        });
+
+        document.getElementById("user_input_form").onsubmit = function (event) {
+            event.preventDefault();
+            var user_input = document.getElementById("user_input").value;
+            var reply_input = document.getElementById("reply_input").value;
+            var currentTime = new Date().toLocaleString();
+            var chatbox = document.getElementById("chatbox");
+
+            var combined_input = reply_input ? reply_input + " " + user_input : user_input;
+
+            chatbox.innerHTML += "<p class='user'><span class='message'>You: " + user_input + "</span><span class='dots'>...</span><span class='options'><button onclick='replyMessage(this)'>Reply</button><button onclick='editMessage(this)'>Edit</button><button onclick='deleteMessage(this)'>Delete</button><button onclick='copyMessage(this)'>Copy</button><button onclick='playAudio(this)'>Audio</button></span></p><p class='timestamps'>" + currentTime + "</p>";
+
+            document.getElementById("user_input").value = "";
+            document.getElementById("reply_input").value = "";
+            document.getElementById("reply_info").style.display = "none";
+
+            localStorage.setItem("chatHistory", chatbox.innerHTML);
+
+            fetch("/chat", {
+                method: "POST",
+                body: new URLSearchParams({
+                    "user_input": combined_input
+                }),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })
+                .then(response => response.text())
+                .then(data => {
+                    var botTime = new Date().toLocaleString();
+                    chatbox.innerHTML += "<p class='bot'><span class='message'>Chatbot: " + data + "</span><span class='dots'>...</span><span class='options'><button onclick='deleteMessage(this)'>Delete</button><button onclick='copyMessage(this)'>Copy</button><button onclick='playAudio(this)'>Audio</button></span></p><p class='timestamp'>" + botTime + "</p>";
+
+                    chatbox.scrollTop = chatbox.scrollHeight;
+
+                    localStorage.setItem("chatHistory", chatbox.innerHTML);
+
+                    initializeOptions();
+                });
+        };
+
+        function replyMessage(element) {
+            var message = element.parentElement.parentElement.querySelector('.message').textContent.replace('You: ', '').replace('Chatbot: ', '').trim();
+            document.getElementById('reply_input').value = message;
+            document.getElementById('reply_info').textContent = "Replying to: " + message;
+            document.getElementById('reply_info').style.display = "block";
+            element.parentElement.style.display = 'none';
+        }
+
+        function editMessage(element) {
+            var messageElement = element.parentElement.parentElement.querySelector('.message');
+            var message = messageElement.textContent.replace('You: ', '').replace('Chatbot: ', '').trim();
+            var newMessage = prompt("Edit your message:", message);
+            if (newMessage !== null && newMessage !== '') {
+                var nextElement = element.parentElement.parentElement.nextElementSibling;
+                if (nextElement && nextElement.classList.contains('bot')) {
+                    nextElement.nextElementSibling.remove();
+                    nextElement.remove();
+                }
+
+                messageElement.textContent = (messageElement.textContent.startsWith('You: ') ? 'You: ' : 'Chatbot: ') + newMessage;
+                localStorage.setItem("chatHistory", document.getElementById("chatbox").innerHTML);
+
+                fetch("/chat", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        "user_input": newMessage
+                    }),
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        var botTime = new Date().toLocaleString();
+                        var chatbox = document.getElementById("chatbox");
+                        chatbox.innerHTML += "<p class='bot'><span class='message'>Chatbot: " + data + "</span><span class='dots'>...</span><span class='options'><button onclick='deleteMessage(this)'>Delete</button><button onclick='copyMessage(this)'>Copy</button><button onclick='playAudio(this)'>Audio</button></span></p><p class='timestamp'>" + botTime + "</p>";
+
+                        chatbox.scrollTop = chatbox.scrollHeight;
+
+                        localStorage.setItem("chatHistory", chatbox.innerHTML);
+
+                        initializeOptions();
+                    });
+            }
+        }
+
+        function deleteMessage(element) {
+            var messageElement = element.parentElement.parentElement;
+            messageElement.nextElementSibling.remove();
+            messageElement.remove();
+            localStorage.setItem("chatHistory", document.getElementById("chatbox").innerHTML);
+        }
+
+        function copyMessage(element) {
+            var message = element.parentElement.parentElement.querySelector('.message').textContent.replace('You: ', '').replace('Chatbot: ', '').trim();
+            navigator.clipboard.writeText(message).then(function () {
+                alert("Message copied to clipboard!");
+            }, function (err) {
+                alert("Could not copy message: ", err);
+            });
+        }
+
+        function playAudio(element) {
+            var message = element.parentElement.parentElement.querySelector('.message').textContent.replace('You: ', '').replace('Chatbot: ', '').trim();
+            var speech = new SpeechSynthesisUtterance(message);
+            window.speechSynthesis.speak(speech);
+        }
+
+        function clearChat() {
+            document.getElementById("chatbox").innerHTML = "<p class='bot'>Welcome! How can I assist you today?</p><p class='timestamp'>" + new Date().toLocaleString() + "</p>";
+            localStorage.removeItem("chatHistory");
+        }
+
+        function initializeOptions() {
+            document.querySelectorAll('.dots').forEach(dot => {
+                dot.addEventListener('click', function () {
+                    var optionsMenu = this.nextElementSibling;
+                    if (optionsMenu.style.display === 'block') {
+                        optionsMenu.style.display = 'none';
+                    } else {
+                        document.querySelectorAll('.options').forEach(menu => menu.style.display = 'none');
+                        optionsMenu.style.display = 'block';
+                    }
+                });
+            });
+
+            document.querySelectorAll('.options').forEach(menu => menu.style.display = 'none');
+        }
+    </script>
+
+</body>
+
+</html>
